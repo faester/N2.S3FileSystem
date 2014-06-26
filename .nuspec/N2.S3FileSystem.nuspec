@@ -2,7 +2,7 @@
 <package>
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>N2.S3Filesystem</id>
-    <version>1.1.0.0</version>
+    <version>1.2.0.0</version>
     <authors>Dave Cowart</authors>
     <owners>Intermark Group, Dave Cowart</owners>
     <projectUrl>https://github.com/Intermark/N2.S3FileSystem</projectUrl>
