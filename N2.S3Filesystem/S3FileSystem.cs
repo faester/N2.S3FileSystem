@@ -126,6 +126,7 @@ namespace N2.Edit.FileSystem {
 
 		public void CopyFile(string fromVirtualPath, string destinationVirtualPath) {
 			var copyRequest = new CopyObjectRequest()
+        .WithMetaData("Expires", DateTime.Now.AddYears(10).ToString("R"))
 				.WithSourceBucket(_bucketName)
 				.WithSourceKey(fromVirtualPath)
 				.WithDestinationBucket(_bucketName)
@@ -157,6 +158,7 @@ namespace N2.Edit.FileSystem {
 
 		public void WriteFile(string virtualPath, Stream inputStream) {
 			var request = new PutObjectRequest()
+        .WithMetaData("Expires", DateTime.Now.AddYears(10).ToString("R"))
 				.WithBucketName(_bucketName)
 				.WithCannedACL(S3CannedACL.PublicRead)
 				.WithKey(FixVirtualPath(virtualPath));
