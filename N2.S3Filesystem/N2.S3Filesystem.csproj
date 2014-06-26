@@ -91,6 +91,6 @@
       <Output TaskParameter="Assemblies" ItemName="AssemblyIdentities" />
     </GetAssemblyIdentity>
     <XmlUpdate Prefix="nu" Namespace="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd" XmlFileName="$(NuspecFile)" XPath="package/nu:metadata/nu:version" Value="%(AssemblyIdentities.Version)" />
-    <Exec Command="&quot;$(NugetExecutable)&quot; pack $(NuspecFile)" />
+    <Exec Command="&quot;$(NugetExecutable)&quot; pack &quot;$(NuspecFile)&quot;" />
   </Target>
 </Project>
