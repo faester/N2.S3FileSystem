@@ -1,3 +1,7 @@
+![Banner](resources/n2s3logo.png)
+
+--------------------
+
 # N2.S3FileSystem
 
 _Available as a [Nuget Package](http://nuget.org/packages/N2.S3Filesystem/)_
