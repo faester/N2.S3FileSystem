@@ -161,6 +161,8 @@ namespace N2.Edit.FileSystem {
         .WithMetaData("Expires", DateTime.Now.AddYears(10).ToString("R"))
 				.WithBucketName(_bucketName)
 				.WithCannedACL(S3CannedACL.PublicRead)
+        .WithTimeout(60 * 60 * 1000) // 1 hour
+        .WithReadWriteTimeout(60 * 60 * 1000) // 1 hour
 				.WithKey(FixVirtualPath(virtualPath));
 
 			request.WithInputStream(inputStream);
