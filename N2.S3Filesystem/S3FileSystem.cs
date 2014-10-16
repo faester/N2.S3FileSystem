@@ -13,30 +13,30 @@ namespace N2.Edit.FileSystem {
   // ReSharper restore CheckNamespace 
   [Service(typeof(IFileSystem))]
   public class S3FileSystem : IFileSystem {
-    private readonly string _accessKeyId;
-    private readonly string _secretAccessKey;
-    private readonly AmazonS3 _s3;
-    private readonly string _bucketName;
+    private readonly string accessKeyId;
+    private readonly string secretAccessKey;
+    private readonly AmazonS3 s3;
+    private readonly string bucketName;
     private const string RootURL = @"https://s3.amazonaws.com/{0}/{1}";
     private const string EmptyFilename = @"__empty";
 
     public S3FileSystem() {
-      _accessKeyId = ConfigurationManager.AppSettings["AWSAccessKeyID"];
-      _secretAccessKey = ConfigurationManager.AppSettings["AWSSecretAccessKey"];
-      _bucketName = ConfigurationManager.AppSettings["AWSBucketName"];
-      _s3 = AWSClientFactory.CreateAmazonS3Client(_accessKeyId, _secretAccessKey);
+      this.accessKeyId = ConfigurationManager.AppSettings["AWSAccessKeyID"];
+      this.secretAccessKey = ConfigurationManager.AppSettings["AWSSecretAccessKey"];
+      this.bucketName = ConfigurationManager.AppSettings["AWSBucketName"];
+      this.s3 = AWSClientFactory.CreateAmazonS3Client(this.accessKeyId, this.secretAccessKey);
     }
 
     #region Implementation of IFileSystem
 
     public IEnumerable<FileData> GetFiles(string parentVirtualPath) {
       var request = new ListObjectsRequest()
-        .WithBucketName(_bucketName)
+        .WithBucketName(this.bucketName)
         .WithPrefix(FixPathForS3(parentVirtualPath))
         .WithDelimiter(@"/");
 
       IEnumerable<FileData> files;
-      using (var response = _s3.ListObjects(request)) {
+      using (var response = this.s3.ListObjects(request)) {
         files = response.S3Objects.Where(file => file.Size > 0).Select(file => new FileData {
           VirtualPath = FixPathForN2(file.Key),
           Name = file.Key.Substring(file.Key.LastIndexOf('/') + 1),
@@ -50,10 +50,10 @@ namespace N2.Edit.FileSystem {
 
     public FileData GetFile(string virtualPath) {
       var request = new GetObjectRequest()
-        .WithBucketName(_bucketName)
+        .WithBucketName(this.bucketName)
         .WithKey(FixPathForS3(virtualPath));
       FileData file;
-      using (var response = _s3.GetObject(request)) {
+      using (var response = this.s3.GetObject(request)) {
         file = new FileData {
           Name = response.Key.Substring(response.Key.LastIndexOf('/') + 1),
           Updated = DateTime.Now,
@@ -69,12 +69,12 @@ namespace N2.Edit.FileSystem {
       parentVirtualPath = FixPathForS3(parentVirtualPath);
 
       var request = new ListObjectsRequest()
-        .WithBucketName(_bucketName)
+        .WithBucketName(this.bucketName)
         .WithPrefix(parentVirtualPath)
         .WithDelimiter(@"/");
 
       IEnumerable<DirectoryData> directories;
-      using (var response = _s3.ListObjects(request)) {
+      using (var response = this.s3.ListObjects(request)) {
         directories = response.CommonPrefixes.Select(dir => new DirectoryData {
           Created = DateTime.Now,
           Updated = DateTime.Now,
@@ -88,7 +88,7 @@ namespace N2.Edit.FileSystem {
     public DirectoryData GetDirectory(string virtualPath) {
       //virtualPath = FixVirtualPath(virtualPath);
       return new DirectoryData {
-        Name = string.Format(RootURL, _bucketName, virtualPath),
+        Name = string.Format(RootURL, this.bucketName, virtualPath),
         VirtualPath = virtualPath,
         Created = DateTime.Now,
         Updated = DateTime.Now
@@ -97,11 +97,11 @@ namespace N2.Edit.FileSystem {
 
     public bool FileExists(string virtualPath) {
       var request = new GetObjectMetadataRequest()
-        .WithBucketName(_bucketName)
+        .WithBucketName(this.bucketName)
         .WithKey(FixPathForS3(virtualPath));
 
       try {
-        using (_s3.GetObjectMetadata(request)) { }
+        using (this.s3.GetObjectMetadata(request)) { }
       } catch (AmazonS3Exception) {
         return false;
       }
@@ -117,10 +117,10 @@ namespace N2.Edit.FileSystem {
 
     public void DeleteFile(string virtualPath) {
       var request = new DeleteObjectRequest()
-        .WithBucketName(_bucketName)
+        .WithBucketName(this.bucketName)
         .WithKey(FixPathForS3(virtualPath));
 
-      using (_s3.DeleteObject(request)) { }
+      using (this.s3.DeleteObject(request)) { }
 
       if (FileDeleted != null)
         FileDeleted.Invoke(this, new FileEventArgs(virtualPath, null));
@@ -129,13 +129,13 @@ namespace N2.Edit.FileSystem {
     public void CopyFile(string fromVirtualPath, string destinationVirtualPath) {
       var copyRequest = new CopyObjectRequest()
         .WithMetaData("Expires", DateTime.Now.AddYears(10).ToString("R"))
-        .WithSourceBucket(_bucketName)
+        .WithSourceBucket(this.bucketName)
         .WithSourceKey(fromVirtualPath)
-        .WithDestinationBucket(_bucketName)
+        .WithDestinationBucket(this.bucketName)
         .WithDestinationKey(destinationVirtualPath)
         .WithCannedACL(S3CannedACL.PublicRead);
 
-      using (_s3.CopyObject(copyRequest)) { }
+      using (this.s3.CopyObject(copyRequest)) { }
       if (FileCopied != null)
         FileCopied.Invoke(this, new FileEventArgs(FixPathForN2(fromVirtualPath), FixPathForN2(destinationVirtualPath)));
     }
@@ -143,12 +143,12 @@ namespace N2.Edit.FileSystem {
 
     public Stream OpenFile(string virtualPath, bool readOnly = false) {
       var request = new GetObjectRequest()
-        .WithBucketName(_bucketName)
+        .WithBucketName(this.bucketName)
         .WithKey(FixPathForS3(virtualPath));
 
       var stream = new MemoryStream();
 
-      using (var response = _s3.GetObject(request)) {
+      using (var response = this.s3.GetObject(request)) {
         var buffer = new byte[32768];
         while (true) {
           var read = response.ResponseStream.Read(buffer, 0, buffer.Length);
@@ -163,7 +163,7 @@ namespace N2.Edit.FileSystem {
     public void WriteFile(string virtualPath, Stream inputStream) {
       var request = new PutObjectRequest()
         .WithMetaData("Expires", DateTime.Now.AddYears(10).ToString("R"))
-        .WithBucketName(_bucketName)
+        .WithBucketName(this.bucketName)
         .WithCannedACL(S3CannedACL.PublicRead)
         .WithTimeout(60 * 60 * 1000) // 1 hour
         .WithReadWriteTimeout(60 * 60 * 1000) // 1 hour
@@ -175,7 +175,7 @@ namespace N2.Edit.FileSystem {
       }
 
       request.WithInputStream(inputStream);
-      using (_s3.PutObject(request)) { }
+      using (this.s3.PutObject(request)) { }
 
       if (FileWritten != null)
         FileWritten.Invoke(this, new FileEventArgs(FixPathForN2(virtualPath), null));
@@ -183,10 +183,10 @@ namespace N2.Edit.FileSystem {
 
     public void ReadFileContents(string virtualPath, Stream outputStream) {
       var request = new GetObjectRequest()
-        .WithBucketName(_bucketName)
+        .WithBucketName(this.bucketName)
         .WithKey(FixPathForS3(virtualPath));
 
-      using (var response = _s3.GetObject(request)) {
+      using (var response = this.s3.GetObject(request)) {
         var buffer = new byte[32768];
         while (true) {
           var read = response.ResponseStream.Read(buffer, 0, buffer.Length);
@@ -200,11 +200,11 @@ namespace N2.Edit.FileSystem {
       virtualPath = FixPathForS3(virtualPath) + EmptyFilename;
 
       var request = new GetObjectMetadataRequest()
-        .WithBucketName(_bucketName)
+        .WithBucketName(this.bucketName)
         .WithKey(virtualPath);
 
       try {
-        using (_s3.GetObjectMetadata(request)) { }
+        using (this.s3.GetObjectMetadata(request)) { }
       } catch (AmazonS3Exception) {
         return false;
       }
@@ -232,11 +232,11 @@ namespace N2.Edit.FileSystem {
       virtualPath = string.Format("{0}/{1}", FixPathForS3(virtualPath), EmptyFilename);
 
       var request = new PutObjectRequest()
-        .WithBucketName(_bucketName)
+        .WithBucketName(this.bucketName)
         .WithKey(virtualPath)
         .WithContentBody(string.Empty)
         .WithContentType("text");
-      using (_s3.PutObject(request)) { }
+      using (this.s3.PutObject(request)) { }
 
       if (DirectoryCreated != null)
         DirectoryCreated.Invoke(this, new FileEventArgs(FixPathForN2(virtualPath), null));
@@ -270,9 +270,9 @@ namespace N2.Edit.FileSystem {
         DeleteFile(file.VirtualPath);
 
       var request = new DeleteObjectRequest()
-        .WithBucketName(_bucketName)
+        .WithBucketName(this.bucketName)
         .WithKey(virtualPath + EmptyFilename);
-      using (_s3.DeleteObject(request)) { }
+      using (this.s3.DeleteObject(request)) { }
     }
 
   }
