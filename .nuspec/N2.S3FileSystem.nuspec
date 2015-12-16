@@ -12,8 +12,8 @@
     <copyright>Copyright Intermark Group 2013</copyright>
     <tags>N2CMS S3 AWS</tags>
     <dependencies>
-      <dependency id="AWSSDK" version="1.5.8.0" />
-      <dependency id="N2CMS.Library" version="2.4.7" />
+      <dependency id="AWSSDK" version="2.3.53.0" />
+      <dependency id="N2CMS.Library" version="2.9.6.2" />
     </dependencies>
     <references>
       <reference file="N2.S3FileSystem.dll" />
