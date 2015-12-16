@@ -6,6 +6,7 @@ using System.Linq;
 using Amazon;
 using Amazon.S3;
 using Amazon.S3.Model;
+using N2.Collections;
 using N2.Engine;
 
 // ReSharper disable CheckNamespace
@@ -17,14 +18,27 @@ namespace N2.Edit.FileSystem {
     private readonly string secretAccessKey;
     private readonly AmazonS3 s3;
     private readonly string bucketName;
-    private const string RootURL = @"https://s3.amazonaws.com/{0}/{1}";
+    private readonly string RootURL;
     private const string EmptyFilename = @"__empty";
+    private readonly RegionEndpoint regionEndpoint;
 
     public S3FileSystem() {
-      this.accessKeyId = ConfigurationManager.AppSettings["AWSAccessKeyID"];
-      this.secretAccessKey = ConfigurationManager.AppSettings["AWSSecretAccessKey"];
-      this.bucketName = ConfigurationManager.AppSettings["AWSBucketName"];
-      this.s3 = AWSClientFactory.CreateAmazonS3Client(this.accessKeyId, this.secretAccessKey);
+      this.accessKeyId = GetAppSetting("AWSAccessKeyID");
+      this.secretAccessKey = GetAppSetting("AWSSecretAccessKey");
+      this.bucketName = GetAppSetting("AWSBucketName");
+      this.regionEndpoint = RegionEndpoint.GetBySystemName(GetAppSetting("AWSRegionEndpoint"));
+      this.RootURL = string.Format(@"https://{0}.s3.amazonaws.com/{{0}}/{{1}}", this.regionEndpoint.DisplayName);
+      this.s3 = AWSClientFactory.CreateAmazonS3Client(this.accessKeyId, this.secretAccessKey,this.regionEndpoint);
+    }
+
+    private static string GetAppSetting(string key)
+    {
+      string value = ConfigurationManager.AppSettings[key];
+      if (string.IsNullOrEmpty(value))
+      {
+        throw new ConfigurationErrorsException(string.Format("Missing required app setting '{0}'. Please fix it.", key));
+      }
+      return value;
     }
 
     #region Implementation of IFileSystem
@@ -275,5 +289,9 @@ namespace N2.Edit.FileSystem {
       using (this.s3.DeleteObject(request)) { }
     }
 
-  }
+        public IEnumerable<FileData> SearchFiles(string query, List<HierarchyNode<ContentItem>> uploadDirectories)
+        {
+            return Enumerable.Empty<FileData>();
+        }
+    }
 }
