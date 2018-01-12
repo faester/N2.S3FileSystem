@@ -1,6 +1,8 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2010
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "N2.S3FileSystem", "N2.S3Filesystem\N2.S3FileSystem.csproj", "{17B2E276-0453-421C-9ECB-C86374F78E8A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{A23BCF64-D6C9-4596-8C60-F941D9698FC8}"
@@ -23,6 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".build", ".build", "{A54C9D
 		.build\MSBuild.Community.Tasks.targets = .build\MSBuild.Community.Tasks.targets
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "N2.S3FileSystem.UnitTests", "N2.S3FileSystem.UnitTests\N2.S3FileSystem.UnitTests.csproj", "{2937E1B7-E2FC-472D-8B66-0BAB732608A6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,8 +37,15 @@ Global
 		{17B2E276-0453-421C-9ECB-C86374F78E8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17B2E276-0453-421C-9ECB-C86374F78E8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17B2E276-0453-421C-9ECB-C86374F78E8A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2937E1B7-E2FC-472D-8B66-0BAB732608A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2937E1B7-E2FC-472D-8B66-0BAB732608A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2937E1B7-E2FC-472D-8B66-0BAB732608A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2937E1B7-E2FC-472D-8B66-0BAB732608A6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {86380535-DB30-4B87-8CC2-3956AF7F606D}
 	EndGlobalSection
 EndGlobal

@@ -30,7 +30,7 @@ namespace N2.Edit.FileSystem
             this.secretAccessKey = GetAppSetting("AWSSecretAccessKey");
             this.bucketName = GetAppSetting("AWSBucketName");
             this.regionEndpoint = RegionEndpoint.GetBySystemName(GetAppSetting("AWSRegionEndpoint"));
-            this.RootURL = string.Format(@"https://{{0}}.s3.{0}.amazonaws.com/{{1}}", this.regionEndpoint.SystemName);
+            this.RootURL = string.Format(@"https://{1}.s3.{0}.amazonaws.com/", this.regionEndpoint.SystemName, bucketName);
             this.s3 = AWSClientFactory.CreateAmazonS3Client(this.accessKeyId, this.secretAccessKey, this.regionEndpoint);
         }
 
@@ -235,8 +235,22 @@ namespace N2.Edit.FileSystem
             var lastDot = virtualPath.LastIndexOf(".", StringComparison.Ordinal);
             request.ContentType = lastDot > 0 ? virtualPath.Substring(lastDot) : "txt";
 
-            s3.PutObject(request);
-            
+            try
+            {
+                s3.PutObject(request);
+            }
+            catch (AmazonS3Exception s3Exception)
+            {
+                throw new Exception($"s3Exception Error uploading to {this.RootURL} with bucket '{bucketName}' using access key '{accessKeyId}'. "
+                                    + $" Request contained content type '{request.ContentType}' and key '{request.Key}'. Region endpoint {regionEndpoint.DisplayName}. Body was\n '{s3Exception.ResponseBody}'."
+                    , s3Exception);
+            }
+            catch (Exception exception)
+            {
+                throw new Exception($"Error uploading to {this.RootURL} with bucket '{bucketName}' using access key '{accessKeyId}'. Exception type is {exception.GetType().Name}"
+                    + $" Request contained content type '{request.ContentType}' and key '{request.Key}'. Region endpoint {regionEndpoint.DisplayName}"
+                    , exception);
+            }
             if (FileWritten != null)
                 FileWritten.Invoke(this, new FileEventArgs(FixPathForN2(virtualPath), null));
         }
