@@ -30,7 +30,7 @@ namespace N2.Edit.FileSystem
             this.secretAccessKey = GetAppSetting("AWSSecretAccessKey");
             this.bucketName = GetAppSetting("AWSBucketName");
             this.regionEndpoint = RegionEndpoint.GetBySystemName(GetAppSetting("AWSRegionEndpoint"));
-            this.RootURL = string.Format(@"https://{0}.s3.amazonaws.com/{{0}}/{{1}}", this.regionEndpoint.SystemName);
+            this.RootURL = string.Format(@"https://{{0}}.s3.{0}.amazonaws.com/{{1}}", this.regionEndpoint.SystemName);
             this.s3 = AWSClientFactory.CreateAmazonS3Client(this.accessKeyId, this.secretAccessKey, this.regionEndpoint);
         }
 
